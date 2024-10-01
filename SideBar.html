@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <!-- Use a templated HTML printing scriptlet to import common stylesheet -->
+    <?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+  </head>
+  <body>
+    <!-- Below is the HTML code that defines the sidebar element structure. -->
+    <div class="sidebar branding-below">
+      <p>
+        Generate a pdf froma sheet template and datasheet.
+      </p>
+      <div class="block form-group" id="sidebar-datasheet-block">
+        <label for="sidebar-datasheet">Row to Process</label>
+        <input id="row" type="number" style="column: 5.5em;", value=1>
+      </div>
+      <button id="sidebar-generate-pdf-button" class="action">GENERATE PDF</button>
+      <div id="sidebar-generation-status"></div>
+      <hr>
+      <br>
+      <div role="form" id="cell-bindings-form" aria-label="cell-bindings-form"></div>
+        <div>
+          <button class="action" id="choose-folder-button">Choose Folder</button>
+        </div>
+        <table>  <tr> <td><i class='material-symbols-outlined' id='refresh-folder'>refresh</i></td><td id='folder-name-info'></td> </table>
+
+        <hr>
+
+        <div class="block form-group" id="sidebar-datasheet-block">
+          <label for="sidebar-datasheet">Data Sheet</label>
+          <input id="sidebar-datasheet" type="text" style="column: 5.5em;", value=
+          <? 
+            var userProperties = PropertiesService.getUserProperties();
+            var prop =  userProperties.getProperty("datasheet");
+      
+            if (!isNaN(prop)){
+              var datasheet_placeholder = "SheetName";
+            }else{
+              var datasheet_placeholder = prop;
+            }
+          ?>
+          <?=datasheet_placeholder?>>
+        </div>
+        <div class="block form-group" id="sidebar-pdfsheet-block">
+          <label for="sidebar-pdfsheet">PDF sheet name</label>
+          <input id="sidebar-pdfsheet" type="text" style="column: 5.5em;" value=
+          <? 
+            var userProperties = PropertiesService.getUserProperties();
+            var prop =  userProperties.getProperty("pdfsheet");
+      
+            if (!isNaN(prop)){
+              var pdfsheet_placeholder = "PDFSheetName";
+            }else{
+              var pdfsheet_placeholder = prop;
+            }
+          ?>
+          <?=pdfsheet_placeholder?>>
+        </div>
+        <div class="block form-group" id="sidebar-pdfname-block">
+          <label for="sidebar-pdfname">Column for PDF name</label>
+          <input id="sidebar-pdfname" type="text" style="column: 5.5em;" value=
+          <? 
+            var userProperties = PropertiesService.getUserProperties();
+            var prop =  userProperties.getProperty("pdfname");
+      
+            if (!isNaN(prop)){
+              var pdfname_placeholder = "A";
+            }else{
+              var pdfname_placeholder = prop;
+            }
+          ?>
+          <?=pdfname_placeholder?>>
+        </div>
+        <div class="block form-group" id="sidebar-pdflastrow-block">
+          <label for="sidebar-pdflastrow">Last row in the PDF sheet</label>
+          <input id="sidebar-pdflastrow" type="text" style="column: 5.5em;" value=
+          <? 
+            var userProperties = PropertiesService.getUserProperties();
+            var prop =  userProperties.getProperty("pdflastrow");
+      
+            if (isNaN(prop)){
+              var pdflastrow_placeholder = "30";
+            }else{
+              var pdflastrow_placeholder = prop;
+            }
+          ?>
+          <?=pdflastrow_placeholder?>>
+        </div>
+        <div class="block form-group" id="sidebar-pdflastcol-block">
+          <label for="sidebar-pdflastcol">Last col in the PDF sheet</label>
+          <input id="sidebar-pdflastcol" type="text" style="column: 5.5em;" value=
+          <? 
+            var userProperties = PropertiesService.getUserProperties();
+            var prop =  userProperties.getProperty("pdflastcol");
+      
+            if (isNaN(prop)){
+              var pdflastcol_placeholder = "15";
+            }else{
+              var pdflastcol_placeholder = prop;
+            }
+          ?>
+          <?=pdflastcol_placeholder?>>
+        </div>
+        <div class="block" id="sidebar-add-sheet-button">
+          <button id="sidebar-add-sheet-button" class="action">Submit</button>
+        </div>
+        <div id="sidebar-add-sheet-status"></div>
+        <hr>
+        
+        <div class="block form-group" id="sidebar-column-block">
+          <label for="sidebar-column">Column</label>
+          <input id="sidebar-column" type="text" style="column: 5.5em;" value="A">
+        </div>
+        <div class="block form-group" id="sidebar-pdfcell-block">
+          <label for="sidebar-pdfcell">PDF cell name</label>
+          <input id="sidebar-pdfcell" type="text" style="column: 5.5em;" value="A5">
+        </div>
+        <div class="block" id="sidebar-add-binding-button">
+          <button id="sidebar-add-binding-button" class="action">Submit</button>
+        </div>
+        <div id="sidebar-add-status"></div>
+        
+        <p>
+          Active Bindings:
+          <div class="block" id="sidebar-refresh-bindings-button">
+          <button id="sidebar-refresh-bindings-button" class="action">Refresh bindings</button>
+          </div>
+        <div id="sidebar-refresh-status"></div>
+        </p>  
+
+        <div id="active-bindings"></div>
+
+      </div>
+      
+    </div>
+    
+    <!-- Enter sidebar bottom-branding below. -->
+    <div class="sidebar bottom">
+      <img alt="Add-on logo" class="logo" width="15"
+          src="https://avatars.githubusercontent.com/u/48188603?v=4">
+      <span class="gray branding-text">
+        PDFFromSheet dev: <a href="https://francescotaurone.github.io/" target="_blank">WebPage</a>
+      </span>
+    </div>
+
+    <!-- Use a templated HTML printing scriptlet to import JavaScript. -->
+    <?!= HtmlService.createHtmlOutputFromFile('SideBarJavaScript').getContent(); ?>
+  </body>
+</html>
