@@ -1,187 +1,230 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script>
-  var column, pdfcell;
-  var $column, $pdfcell;
+    var column, pdfcell;
+    var $column, $pdfcell;
 
-  /**
-   * Run initializations on sidebar load.
-   */
-  $(function() {
-    $row = $('#row');
-    $row.change(onRowChange);
-    row = Number($row.val());
-    onRefreshBindingsClick();
-    onRefreshFolderProp();
-    $('#sidebar-generate-pdf-button').click(function(){
-      google.script.run
-      .withSuccessHandler(
-        function(pdf) {
-          // Respond to success conditions here.
-          pdfDict = JSON.parse(pdf);
-          $('#sidebar-generation-status').html("Success: <a href='" + pdfDict["pdfUrl"] + "'> " + pdfDict["pdfName"] + "</a>"+" generated");
-        })
-      .withFailureHandler(
-        function(fileName) {
-          // Respond to failure conditions here.
-          $('#sidebar-generation-status').html("ERROR: "+fileName);
-        })
-      .generateResultingPDF(row);
-    });
-    $('#choose-folder-button').click(function(){
-      google.script.run.showPicker();
-    });
-    $('#refresh-folder').click(onRefreshFolderProp);
-    $('#sidebar-add-binding-button').click(onSubmitClick);
-    $('#sidebar-add-sheet-button').click(onSubmitSheetClick);
-
-    $('#sidebar-refresh-bindings-button').click(onRefreshBindingsClick);
-    $("#active-bindings").on("click",".delete-binding", function(){
-      //alert("button pressed")
-      try{
-        google.script.run.deleteSingleProperty($(this).attr('id'));
+    /**
+     * Run initializations on sidebar load.
+     */
+    $(function () {
+        $row = $('#row');
+        $row.change(onRowChange);
+        row = Number($row.val());
+        dropDownPopulate("data-sheet-dropdown");
+        dropDownPopulate("pdf-sheet-dropdown");
         onRefreshBindingsClick();
-      }catch (e) {
-        alert('all-bindings-table-button click() yielded an error: ' + e);
-      }
-    });
-  });
-  function onRowChange() {
-    row = Number(this.value);
-    updateResultingSize();
-  }
-  function onRefreshFolderProp(){
-    folder_prop = google.script.run
-    .withSuccessHandler(
-      function(folder_prop){
-        if (folder_prop != null){
-          $('#folder-name-info').html("<a href='" + folder_prop["url"] + "'>" + folder_prop["name"] + "</a>");
-        }
-      }
-    )
-    .withFailureHandler(
-        function(folder_prop) {
-          // Respond to failure conditions here.
-          alert('Problem during refresh of file properties.');
-    })
-    .getFolderProperty();
-    
-  }
-  function onRefreshBindingsClick() {
-    //this.disabled = true;
-    google.script.run
-      .withSuccessHandler(
-        function(properties){
-          html = "<table id='all-bindings-table'>  <tr> <th></th><th>Id</th> <th>Column</th> <th>Cell</th></tr>";
-          for (key in properties) { 
-            if (!isNaN(parseInt(key))){
-              property = JSON.parse(properties[key])
-              html += "<tr> <td><i class='material-symbols-outlined delete-binding' id="+key+">delete_forever</i></td><td>" + key +"</td><td>" + property["column"] +"</td><td>"+ property["cell"] +"</td></tr>";
+        onRefreshFolderProp();
+        $('#sidebar-generate-pdf-button').click(function () {
+            google.script.run
+                .withSuccessHandler(
+                    function (pdf) {
+                        // Respond to success conditions here.
+                        console.log(pdf);
+                        pdfDict = JSON.parse(pdf);
+                        $('#sidebar-generation-status').html("Success: <a href='" + pdfDict["pdfUrl"] + "'target=_blank rel=noopener noreferrer> " + pdfDict["pdfName"] + "</a>" + " generated");
+                    })
+                .withFailureHandler(
+                    function (fileName) {
+                        // Respond to failure conditions here.
+                        $('#sidebar-generation-status').html("ERROR: " + fileName);
+                    })
+                .generateResultingPDF(row);
+        });
+        $('#choose-folder-button').click(function () {
+            google.script.run.showPicker();
+        });
+        $('#refresh-folder').click(onRefreshFolderProp);
+        $('#sidebar-add-binding-button').click(onSubmitClick);
+        $('#sidebar-add-sheet-button').click(onSubmitSheetClick);
+
+        $('#sidebar-refresh-bindings-button').click(onRefreshBindingsClick);
+        $("#active-bindings").on("click", ".delete-binding", function () {
+            //alert("button pressed")
+            try {
+                google.script.run.deleteSingleProperty($(this).attr('id'));
+                onRefreshBindingsClick();
+            } catch (e) {
+                alert('all-bindings-table-button click() yielded an error: ' + e);
             }
-          }
-          html += "</table>";
-          
-          try {
-            $('#active-bindings').html(html);
-            //showRefreshStatus('Successfully refreshed bindings',  'success');
-          } catch (e) {
-            alert('myFunction() yielded an error: ' + e);
-          }
-          
+        });
+        
+    });
+
+    function onRowChange() {
+        row = Number(this.value);
+        //updateResultingSize();
+    }
+    function onRefreshFolderProp() {
+        folder_prop = google.script.run
+            .withSuccessHandler(
+                function (folder_prop) {
+                    if (folder_prop != null) {
+                        $('#folder-name-info').html("<a href='" + folder_prop["url"] + "'>" + folder_prop["name"] + "</a>");
+                    }
+                }
+            )
+            .withFailureHandler(
+                function (folder_prop) {
+                    // Respond to failure conditions here.
+                    alert('Problem during refresh of file properties.');
+                })
+            .getFolderProperty();
+
+    }
+    function onRefreshBindingsClick() {
+        //this.disabled = true;
+        google.script.run
+            .withSuccessHandler(
+                function (properties) {
+                    html = "<table id='all-bindings-table'>  <tr> <th></th><th>Column</th> <th>Cell</th></tr>";
+                    for (key in properties) {
+                        if (!isNaN(parseInt(key))) {
+                            property = JSON.parse(properties[key])
+                            html += "<tr> <td><i class='material-symbols-outlined delete-binding' id=" + key + ">delete_forever</i></td><td>" + property["column"] + "</td><td>" + property["cell"] + "</td></tr>";
+                        }
+                    }
+                    html += "</table>";
+
+                    try {
+                        $('#active-bindings').html(html);
+                        //showRefreshStatus('Successfully refreshed bindings',  'success');
+                    } catch (e) {
+                        alert('myFunction() yielded an error: ' + e);
+                    }
+
+                }
+            )
+            .withFailureHandler(
+                function (properties) {
+                    // Respond to failure conditions here.
+
+                    alert('Problem during refresh.');
+
+                    showRefreshStatus(msg, 'error');
+
+                })
+            .readProperties();
+    }
+    function onSubmitClick() {
+        $column = $('#sidebar-column');
+        column = $column.val();
+
+        $pdfcell = $('#sidebar-pdfcell');
+        pdfcell = $pdfcell.val();
+
+        // Send the value to the server and handle the response.
+        google.script.run
+            .withSuccessHandler(
+                function (msg, element) {
+                    // Respond to success conditions here.
+                    showAddStatus('Successfully added Col ' + column + ' for pdf cell ' + pdfcell, 'success');
+                })
+            .withFailureHandler(
+                function (msg, element) {
+                    // Respond to failure conditions here.
+                    showAddStatus(msg, 'error');
+                })
+            .withUserObject(this)
+            .setProperties(column = column, cell = pdfcell);
+        onRefreshBindingsClick()
+    }
+
+    function onSubmitSheetClick() {
+        $datasheet = $('#data-sheet-dropdown');
+        datasheet = $datasheet[0].value;
+
+        $pdfsheet = $('#pdf-sheet-dropdown');
+        pdfsheet = $pdfsheet[0].value;
+
+        $pdfname = $('#sidebar-pdfname');
+        pdfname = $pdfname.val();
+
+        $pdflastrow = $('#sidebar-pdflastrow');
+        pdflastrow = $pdflastrow.val();
+
+        $pdflastcol = $('#sidebar-pdflastcol');
+        pdflastcol = $pdflastcol.val();
+        
+        emailchecked = document.getElementById('send-email-check').checked;
+        
+        $emailcolumn = $('#sidebar-mail-column');
+        emailcolumn = $emailcolumn.val();
+
+        // Send the value to the server and handle the response.
+        runner = google.script.run
+            .withSuccessHandler(
+                function (msg, element) {
+                    // Respond to success conditions here.
+                    showAddSheetStatus('Successfully updated', 'success');
+                })
+            .withFailureHandler(
+                function (msg, element) {
+                    // Respond to failure conditions here.
+                    showAddSheetStatus(msg, 'error');
+                })
+            .withUserObject(this);
+        runner.setProperty("datasheet", datasheet);
+        runner.setProperty("pdfsheet", pdfsheet);
+        runner.setProperty("pdfname", pdfname);
+        runner.setProperty("pdflastrow", pdflastrow);
+        runner.setProperty("pdflastcol", pdflastcol);
+        if (emailchecked) {
+            runner.setProperty("emailchecked", "true");
+        } else {
+            runner.setProperty("emailchecked", "false");
         }
-      )
-      .withFailureHandler(
-          function(properties) {
-            // Respond to failure conditions here.
-            
-            alert('Problem during refresh.');
-            
-            showRefreshStatus(msg, 'error');
-            
-      })
-      .readProperties();
-  }
-  function onSubmitClick() {
-    $column = $('#sidebar-column');
-    column = $column.val();
-
-    $pdfcell = $('#sidebar-pdfcell');
-    pdfcell = $pdfcell.val();
-    
-    // Send the value to the server and handle the response.
-    google.script.run
-        .withSuccessHandler(
-          function(msg, element) {
-            // Respond to success conditions here.
-            showAddStatus('Successfully added Col ' + column + ' for pdf cell ' + pdfcell,  'success');
-          })
-        .withFailureHandler(
-          function(msg, element) {
-            // Respond to failure conditions here.
-            showAddStatus(msg, 'error');
-          })
-        .withUserObject(this)
-        .setProperties(column = column, cell = pdfcell);
-    onRefreshBindingsClick()
-  }
-
-  function onSubmitSheetClick() {
-    $datasheet = $('#sidebar-datasheet');
-    datasheet = $datasheet.val();
-
-    $pdfsheet = $('#sidebar-pdfsheet');
-    pdfsheet = $pdfsheet.val();
- 
-    $pdfname = $('#sidebar-pdfname');
-    pdfname = $pdfname.val();
-
-    $pdflastrow = $('#sidebar-pdflastrow');
-    pdflastrow = $pdflastrow.val();
-    $pdflastcol = $('#sidebar-pdflastcol');
-    pdflastcol = $pdflastcol.val();
-
-    // Send the value to the server and handle the response.
-    runner = google.script.run
-        .withSuccessHandler(
-          function(msg, element) {
-            // Respond to success conditions here.
-            showAddSheetStatus('Successfully updated',  'success');
-          })
-        .withFailureHandler(
-          function(msg, element) {
-            // Respond to failure conditions here.
-            showAddSheetStatus(msg, 'error');
-          })
-        .withUserObject(this);
-    runner.setProperty("datasheet", datasheet);
-    runner.setProperty("pdfsheet", pdfsheet);
-    runner.setProperty("pdfname", pdfname);
-    runner.setProperty("pdflastrow", pdflastrow);
-    runner.setProperty("pdflastcol", pdflastcol);
-  }
-  /**
-   * Displays the given status message in the sidebar.
-   *
-   * @param {String} msg The status message to display.
-   * @param {String} classId The message type (class id) that the message
-   *   should be displayed as.
-   */
-  function showAddStatus(msg, classId) {
-    $('#sidebar-add-status').removeClass().html(msg);
-    if (classId) {
-      $('#sidebar-add-status').addClass(classId);
+        runner.setProperty("emailcolumn", emailcolumn);
     }
-  }
-  function showAddSheetStatus(msg, classId) {
-    $('#sidebar-add-sheet-status').removeClass().html(msg);
-    if (classId) {
-      $('#sidebar-add-sheet-status').addClass(classId);
+    /**
+     * Displays the given status message in the sidebar.
+     *
+     * @param {String} msg The status message to display.
+     * @param {String} classId The message type (class id) that the message
+     *   should be displayed as.
+     */
+    function showAddStatus(msg, classId) {
+        $('#sidebar-add-status').removeClass().html(msg);
+        if (classId) {
+            $('#sidebar-add-status').addClass(classId);
+        }
     }
-  }
-  function showRefreshStatus(msg, classId) {
-    $('#sidebar-refresh-status').removeClass().html(msg);
-    if (classId) {
-      $('#sidebar-refresh-status').addClass(classId);
+    function showAddSheetStatus(msg, classId) {
+        $('#sidebar-add-sheet-status').removeClass().html(msg);
+        if (classId) {
+            $('#sidebar-add-sheet-status').addClass(classId);
+        }
     }
-  }
+    function showRefreshStatus(msg, classId) {
+        $('#sidebar-refresh-status').removeClass().html(msg);
+        if (classId) {
+            $('#sidebar-refresh-status').addClass(classId);
+        }
+    }
+    function dropDownPopulate(id) {
+        google.script.run
+            .withSuccessHandler(
+                function (sheetNameArray) {
+                    // Respond to success conditions here.
+                    dropdown = document.getElementById(id);
+                    for (var i = 0; i < sheetNameArray.length; i++) {
+                        var sheetName = sheetNameArray[i];
+                        existingOptions = dropdown.querySelectorAll("[value=" + sheetName + "]");
+                        if (existingOptions.length == 0) {
+                            var el = document.createElement("option");
+                            el.textContent = sheetName;
+                            el.value = sheetName;
+                            dropdown.appendChild(el);
+                        }
+                    }
+                })
+            .withFailureHandler(
+                function (msg, element) {
+                    // Respond to failure conditions here.
+                    showAddStatus(msg, 'error');
+                })
+            .withUserObject(this)
+            .getNamesOfSheets();
+    }
+
 
 </script>
