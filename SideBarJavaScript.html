@@ -47,8 +47,10 @@
                 alert('all-bindings-table-button click() yielded an error: ' + e);
             }
         });
-        
-    });
+        $('#send-email-check').change(emailInfoVisibilityCheck)
+        emailInfoVisibilityCheck();
+
+    })
 
     function onRowChange() {
         row = Number(this.value);
@@ -150,6 +152,13 @@
         $emailcolumn = $('#sidebar-mail-column');
         emailcolumn = $emailcolumn.val();
 
+        $emailsendername = $('#email-sender-name');
+        emailsendername = $emailsendername.val();
+        $emailsubject = $('#email-subject');
+        emailsubject = $emailsubject.val();
+        $emailbody = $('#email-body');
+        emailbody = $emailbody.val();
+
         // Send the value to the server and handle the response.
         runner = google.script.run
             .withSuccessHandler(
@@ -174,6 +183,9 @@
             runner.setProperty("emailchecked", "false");
         }
         runner.setProperty("emailcolumn", emailcolumn);
+        runner.setProperty("emailsendername", emailsendername);
+        runner.setProperty("emailsubject", emailsubject);
+        runner.setProperty("emailbody", emailbody);
     }
     /**
      * Displays the given status message in the sidebar.
@@ -225,6 +237,13 @@
             .withUserObject(this)
             .getNamesOfSheets();
     }
-
+    function emailInfoVisibilityCheck() {
+      check = document.getElementById('send-email-check');
+      if(check.checked) {
+          document.getElementById('email-info').style.display = 'inline';
+      }else{
+          document.getElementById('email-info').style.display = 'none';
+      }
+    }
 
 </script>

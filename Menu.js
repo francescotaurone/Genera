@@ -19,6 +19,8 @@ function onOpen(e) {
   SpreadsheetApp.getUi()
       .createAddonMenu()
       .addItem('Settings', 'showSidebar')
+      .addItem('Install trigger on form submission', 'installTrigger')
+      .addItem('Delete triggers', 'deleteTriggers')
       .addToUi();
 }
 
@@ -43,4 +45,21 @@ function showSidebar() {
       .setTitle(APP_TITLE)
       .setSandboxMode(HtmlService.SandboxMode.IFRAME);
   SpreadsheetApp.getUi().showSidebar(ui);
+}
+
+function installTrigger() {
+  ScriptApp.newTrigger('onFormSubmitFunction')
+      .forSpreadsheet(SpreadsheetApp.getActive())
+      .onFormSubmit()
+      .create();
+  SpreadsheetApp.getUi().alert("Trigger installed");
+}
+
+function deleteTriggers(){
+  // Deletes all triggers in the current project.
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    ScriptApp.deleteTrigger(triggers[i]);
+  }
+  SpreadsheetApp.getUi().alert("Triggers deleted");
 }
