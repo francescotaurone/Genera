@@ -1,5 +1,6 @@
 /** * @OnlyCurrentDoc */ 
-
+//"https://www.googleapis.com/auth/drive.file",
+//"https://www.googleapis.com/auth/script.locale",
 // Application constants
 const APP_TITLE = 'GENERA';
 
