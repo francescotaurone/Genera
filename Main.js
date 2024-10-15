@@ -37,7 +37,7 @@ function generateResultingPDF(rowToProcess = 1) {
     //const pdfFolder = JSON.parse(properties["pdfFolder"]);
     //const pdfFolderId = pdfFolder["id"];
     const pdfColumnIndex = letterToColumn(properties["pdfname"]) - 1;
-    const mailColumnIndex = letterToColumn(properties["emailcolumn"]) - 1;
+    
     var pdfs = [];
     var rowData = data[rowToProcess - 1];
     var pdfName = rowData[pdfColumnIndex];
@@ -64,6 +64,7 @@ function generateResultingPDF(rowToProcess = 1) {
         cells.push(binding["cell"]);
     }
 
+    Logger.log(cells);
     const rngClear = pdfSheet.getRangeList(cells).getRanges()
     rngClear.forEach(function (cell) {
         cell.clearContent();
@@ -104,6 +105,7 @@ function generateResultingPDF(rowToProcess = 1) {
         subject = properties["emailsubject"]
         senderName = properties["emailsendername"]
         attachment = pdf["pdf"];
+        const mailColumnIndex = letterToColumn(properties["emailcolumn"]) - 1;
         emailAddress = rowData[mailColumnIndex];
         Logger.log("Sending email to "+ emailAddress);
         sendEmail(emailAddress, subject, body, senderName, attachment);
