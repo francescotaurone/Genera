@@ -14,36 +14,40 @@
     dropDownPopulate("pdf-sheet-dropdown");
     onRefreshBindingsClick();
     onRefreshFolderProp();
-    var generatePDFRunner = google.script.run
+    
+    
+    $('#sidebar-generate-pdf-button').click(function () {
+      document.getElementById("sidebar-generation-status").style.display = "none";
+      $('#sidebar-generate-pdf-button').prop('disabled', true);
+      settings = getSettingsFromHTML();
+      console.log("Settings: "+JSON.stringify(settings));
+      google.script.run
         .withSuccessHandler(
-          function (pdf) {
+          function (msg) {
             // Respond to success conditions here.
-            console.log(pdf);
-            pdfDict = JSON.parse(pdf);
-            $('#sidebar-generation-status').html("Success: <a href='" + pdfDict["pdfUrl"] + "'target=_blank rel=noopener noreferrer> " + pdfDict["pdfName"] + "</a>" + " generated");
-            $('#sidebar-generate-pdf-button').prop('disabled', false);
+            document.getElementById("sidebar-generation-status").style.display = "inline";
+            console.log(msg);
+            showGenerateStatus(msg, 'success');
+            $('#sidebar-generate-pdf-button').prop("disabled", false);
           })
         .withFailureHandler(
           function (error) {
             // Respond to failure conditions here.
-            $('#sidebar-generation-status').html("ERROR: " + error);
-            $('#sidebar-generate-pdf-button').prop('disabled', false);
-          })
-    
-    $('#sidebar-generate-pdf-button').click(async function () {
-
-      $('#sidebar-generate-pdf-button').prop('disabled', true);
-      settings = getSettingsFromHTML();
-      generatePDFRunner.onSubmitSheetClick(settings);
-      generatePDFRunner.generateResultingPDF(row);
+            document.getElementById("sidebar-generation-status").style.display = "inline";
+            showGenerateStatus(error, 'error');
+            $('#sidebar-generate-pdf-button').prop("disabled", false);
+        }).generateResultingPDF(row, settings);
 
     });
+    
     $('#choose-folder-button').click(function () {
       google.script.run.showPicker();
     });
     $('#refresh-folder').click(onRefreshFolderProp);
+
     $('#sidebar-add-binding-button').click(onSubmitClick);
-    /*$('#sidebar-update-settings-button').click(async function () {
+
+    $('#sidebar-update-settings-button').click(async function () {
       $('#sidebar-update-settings-button').prop('disabled', true);
       google.script.run
         .withSuccessHandler(function () {
@@ -57,9 +61,10 @@
         .onSubmitSheetClick(getSettingsFromHTML());
     }
 
-    );*/
+    );
 
     $('#sidebar-refresh-bindings-button').click(onRefreshBindingsClick);
+
     $("#active-bindings").on("click", ".delete-binding", function () {
       //alert("button pressed")
       google.script.run
@@ -67,6 +72,7 @@
         .withFailureHandler(alert('all-bindings-table-button click() yielded an error: ' + e))
         .deleteSingleProperty($(this).attr('id'));
     });
+
     $('#send-email-check').change(emailInfoVisibilityCheck)
     emailInfoVisibilityCheck();
 
@@ -94,10 +100,13 @@
 
   }
   function onRefreshBindingsClick() {
+    $('#sidebar-refresh-bindings-button').prop('disabled', true);
+    
     //this.disabled = true;
     google.script.run
       .withSuccessHandler(
         function (properties) {
+          $('#sidebar-refresh-bindings-button').prop('disabled', false);
           html = "<table id='all-bindings-table'>  <tr> <th></th><th>Column</th> <th>Cell</th></tr>";
           for (key in properties) {
             if (!isNaN(parseInt(key))) {
@@ -107,48 +116,46 @@
           }
           html += "</table>";
 
-          try {
-            $('#active-bindings').html(html);
-            //showRefreshStatus('Successfully refreshed bindings',  'success');
-          } catch (e) {
-            alert('myFunction() yielded an error: ' + e);
-          }
+          $('#active-bindings').html(html);
+          showRefreshStatus('Done!',  'success');
+
 
         }
       )
       .withFailureHandler(
         function (properties) {
           // Respond to failure conditions here.
-
-          alert('Problem during refresh.');
-
+          $('#sidebar-refresh-bindings-button').prop('disabled', true);
           showRefreshStatus(msg, 'error');
 
         })
       .readProperties();
   }
   function onSubmitClick() {
+    $('#sidebar-add-binding-button').prop('disabled', true);
     $column = $('#sidebar-column');
     column = $column.val();
-
+    
     $pdfcell = $('#sidebar-pdfcell');
     pdfcell = $pdfcell.val();
 
     // Send the value to the server and handle the response.
     google.script.run
       .withSuccessHandler(
-        function (msg, element) {
+        function (msg) {
           // Respond to success conditions here.
-          showAddStatus('Successfully added Col ' + column + ' for pdf cell ' + pdfcell, 'success');
+          onRefreshBindingsClick();
+          showAddStatus('Successfull: ('+ column + ',' + pdfcell+')', 'success');
+          $('#sidebar-add-binding-button').prop('disabled', false);
         })
       .withFailureHandler(
-        function (msg, element) {
+        function (msg) {
           // Respond to failure conditions here.
           showAddStatus(msg, 'error');
+          $('#sidebar-add-binding-button').prop('disabled', false);
         })
-      .withUserObject(this)
-      .setProperties(column = column, cell = pdfcell);
-    onRefreshBindingsClick()
+      .setBinding(column = column, cell = pdfcell);
+    
   }
 
 
@@ -159,23 +166,38 @@
    * @param {String} classId The message type (class id) that the message
    *   should be displayed as.
    */
-  function showAddStatus(msg, classId) {
-    $('#sidebar-add-status').removeClass().html(msg);
+   function showGenerateStatus(msg, classId) {
+    document.getElementById("sidebar-generation-status").style.display = "inline";
+    $('#sidebar-generation-status').removeClass().html(msg);
     if (classId) {
-      $('#sidebar-add-status').addClass(classId);
+      $('#sidebar-generation-status').addClass(classId);
     }
+    //makeObjectDisappearWithDelay("sidebar-generation-status");
   }
+  
   function showAddSheetStatus(msg, classId) {
+    document.getElementById("sidebar-update-settings-status").style.display = "inline";
     $('#sidebar-update-settings-status').removeClass().html(msg);
     if (classId) {
       $('#sidebar-update-settings-status').addClass(classId);
     }
+    makeObjectDisappearWithDelay("sidebar-update-settings-status");
+  }
+  function showAddStatus(msg, classId) {
+    document.getElementById("sidebar-add-status").style.display = "inline";
+    $('#sidebar-add-status').removeClass().html(msg);
+    if (classId) {
+      $('#sidebar-add-status').addClass(classId);
+    }
+    makeObjectDisappearWithDelay("sidebar-add-status");
   }
   function showRefreshStatus(msg, classId) {
+    document.getElementById("sidebar-refresh-status").style.display = "inline";
     $('#sidebar-refresh-status').removeClass().html(msg);
     if (classId) {
       $('#sidebar-refresh-status').addClass(classId);
     }
+    makeObjectDisappearWithDelay("sidebar-refresh-status");
   }
   function dropDownPopulate(id) {
     google.script.run
@@ -252,5 +274,9 @@
     settings["emailbody"] = $emailbody.val();
 
     return settings;
+  }
+  function makeObjectDisappearWithDelay(objectID, delay = 5000){
+    var object = document.getElementById(objectID);
+    setTimeout(function(){object.style.display = "none";}, delay);
   }
 </script>

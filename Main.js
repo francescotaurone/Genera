@@ -12,10 +12,10 @@ function onFormSubmitFunction(e) {
   generateResultingPDF(rowToProcess = 2) //the last arriving row should be row 2. It is vilnerable from many forms coming in at the same time.
 }
 
-function generateResultingPDF(rowToProcess = 1) {
+function generateResultingPDF(rowToProcess = 1, settings) {
   //{pdfname=A, pdfsheet=pdf, 1={"column":"B","cell":"B3"}, 2={"column":"C","cell":"B4"}, pdflastrow=6, pdfFolder={"id":"1a_jQNoce82PR3vNZaPJYsHlBt3SFQWuI","url":"https://drive.google.com/drive/folders/1a_jQNoce82PR3vNZaPJYsHlBt3SFQWuI","name":"outputFolderTest"}, datasheet=Foglio2, pdflastcol=4}
-
-
+  console.log("Settings in generateResultingPDF: " + JSON.stringify(settings));
+  onSubmitSheetClick(settings);
   properties = readProperties();
   Logger.log("Reading properties " + JSON.stringify(properties))
 
@@ -117,11 +117,11 @@ function generateResultingPDF(rowToProcess = 1) {
     Logger.log("Sending email to " + emailAddress);
     sendEmail(emailAddress, subject, body, senderName, attachment);
   }
-
-  return JSON.stringify({
-    "pdfName": pdfName,
-    "pdfUrl": pdf["url"]//pdf.getUrl()
-  })
+  msg = "Success: <a href='" + pdf["url"] + "'target=_blank rel=noopener noreferrer> " + pdfName + "</a>" + " generated";
+  if (properties["emailchecked"] === "true") {
+    msg += " and sent to " + emailAddress;
+  }
+  return msg
 }
 function processDate(dateString = "28/09/2012") {
   year = +dateString.substring(6)
@@ -316,31 +316,72 @@ function sendEmail(recipient, subject, body, name, attachments) {
 }
 
 function onSubmitSheetClick(settings) {
-  columnRegex = new RegExp("[a-zA-Z]+");
+  currentProperties = readProperties();
 
-  Logger.log("Settings: " + JSON.stringify(settings));
-  if (!columnRegex.test(settings["pdfname"])) {
+  if (!checkValidColumn(settings["pdfname"])) {
     throw "Invalid column for the name of the PDF."
   }
-  if (isNaN(parseInt(settings["pdflastrow"]))) {
+  if (!checkValidRow(settings["pdflastrow"])) {
     throw "Invalid row for last PDF row."
   }
-  if (!columnRegex.test(settings["pdflastcol"])) {
+  if (!checkValidColumn(settings["pdflastcol"])) {
     throw "Invalid column for the last PDF column."
   }
+
   // Send the value to the server and handle the response.
-  setProperty("datasheet", settings["datasheet"]);
-  setProperty("pdfsheet", settings["pdfsheet"]);
-  setProperty("pdfname", settings["pdfname"]);
-  setProperty("pdflastrow", settings["pdflastrow"]);
-  setProperty("pdflastcol", settings["pdflastcol"]);
+
+  setPropertyIfNeeded(currentProperties, "datasheet", settings["datasheet"]);
+  setPropertyIfNeeded(currentProperties, "pdfsheet", settings["pdfsheet"]);
+  setPropertyIfNeeded(currentProperties, "pdfname", settings["pdfname"]);
+  setPropertyIfNeeded(currentProperties, "pdflastrow", settings["pdflastrow"]);
+  setPropertyIfNeeded(currentProperties, "pdflastcol", settings["pdflastcol"]);
   if (settings["emailchecked"]) {
-    setProperty("emailchecked", "true");
+    setPropertyIfNeeded(currentProperties, "emailchecked", "true");
   } else {
-    setProperty("emailchecked", "false");
+    setPropertyIfNeeded(currentProperties, "emailchecked", "false");
   }
-  setProperty("emailcolumn", settings["emailcolumn"]);
-  setProperty("emailsendername", settings["emailsendername"]);
-  setProperty("emailsubject", settings["emailsubject"]);
-  setProperty("emailbody", settings["emailbody"]);
+  setPropertyIfNeeded(currentProperties, "emailcolumn", settings["emailcolumn"]);
+  setPropertyIfNeeded(currentProperties, "emailsendername", settings["emailsendername"]);
+  setPropertyIfNeeded(currentProperties, "emailsubject", settings["emailsubject"]);
+  setPropertyIfNeeded(currentProperties, "emailbody", settings["emailbody"]);
+
+  var settingsKeys = Object.keys(settings);
+  i = 0;
+  while(i<10){
+    i++;
+    
+    Logger.log("iterate loop");
+    currentProperties = readProperties();
+    currentPropertiesKeys = Object.keys(currentProperties);
+    ok = true;
+    Logger.log(" Settings keys: " + settingsKeys + " Properties keys: " + currentPropertiesKeys);
+
+    var BreakException = {};
+    try{
+      if (!isSubset(settingsKeys, currentPropertiesKeys)) break;
+      settingsKeys.forEach(key => {
+        if (settings[key].toString() != currentProperties[key].toString()){
+          Logger.log("They are not aligned, Key: " + key + " Value Settings: " + settings[key] + " Value Properties: " + currentProperties[key]);
+          ok = false;
+          SpreadsheetApp.getActiveSpreadsheet().toast("Retrying Setting update: " + i);
+          throw BreakException;
+        }
+    })} catch (e) {
+      if (e !== BreakException) throw e;
+    }
+    if (ok){
+      break;
+    }
+  Utilities.sleep(1000);
+  }
+  if (!ok) {
+    throw "Settings not correctly saved. Please try again."
+  }
+  
+  Logger.log("Properties correctly written: " + JSON.stringify(currentProperties = readProperties()));
+  return ""
+}
+
+function isSubset(subsetObj, supersetObj) {
+  return Object.keys(subsetObj).every(key => key in supersetObj);
 }

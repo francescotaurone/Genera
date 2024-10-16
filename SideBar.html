@@ -19,6 +19,7 @@
       <input id="row" type="number" value=1>
     </div>
     <button id="sidebar-generate-pdf-button" class="action">GENERATE PDF</button>
+    <br>
     <div id="sidebar-generation-status"></div>
     <hr>
     <br>
@@ -33,17 +34,20 @@
     <div class="block form-group" id="sidebar-datasheet-block">
       <label for="sidebar-datasheet">Data Sheet</label>
       <select id="data-sheet-dropdown" class="dropbtn">
-        <? prop=documentProperties.getProperty("datasheet"); if (prop){var placeholder=prop; ?><option value=
-          <?=placeholder?>text=<?=placeholder?>
-          selected> </option><?} ?>
+        <? prop=documentProperties.getProperty("datasheet"); if (prop){
+            var placeholder=prop; ?>
+            <option value=
+            <?=placeholder ?>
+            selected> <?=placeholder?></option>
+          <?} ?>
       </select>
     </div>
     <div class="block form-group" id="sidebar-pdfsheet-block">
       <label for="sidebar-pdfsheet">PDF template sheet</label>
       <select id="pdf-sheet-dropdown" class="dropbtn">
         <? prop=documentProperties.getProperty("pdfsheet"); if (prop){var placeholder=prop; ?><option value=
-          <?=placeholder?>text=<?=placeholder?>
-          selected> </option><?} ?>
+          <?=placeholder ?>
+          selected> <?=placeholder?></option><?} ?>
       </select>
     </div>
     <div class="block form-group" id="sidebar-pdfname-block">
@@ -109,23 +113,21 @@
 
     <div class="block form-group" id="sidebar-column-block">
       <label for="sidebar-column">Column</label>
+      <br>
       <input id="sidebar-column" type="text" value="A">
-    </div>
-    <div class="block form-group" id="sidebar-pdfcell-block">
+      <br>
       <label for="sidebar-pdfcell">PDF cell name</label>
+      <br>
       <input id="sidebar-pdfcell" type="text" value="A5">
+      <br>
+      <button id="sidebar-add-binding-button" class="action">Add binding</button>
+      <div id="sidebar-add-status"></div>
     </div>
-    <div class="block" id="sidebar-add-binding-button">
-      <button id="sidebar-add-binding-button" class="action">Submit</button>
-    </div>
-    <div id="sidebar-add-status"></div>
-
     <p>
       Active Bindings:
-    <div class="block" id="sidebar-refresh-bindings-button">
+      <br>
       <button id="sidebar-refresh-bindings-button" class="action">Refresh bindings</button>
-    </div>
-    <div id="sidebar-refresh-status"></div>
+      <div id="sidebar-refresh-status"></div>
     </p>
 
     <div id="active-bindings"></div>

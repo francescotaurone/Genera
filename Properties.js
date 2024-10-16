@@ -1,4 +1,10 @@
-function setProperties(column = "TestColumn", cell = "TestCell") {
+function setBinding(column = "TestColumn", cell = "TestCell") {
+  if (!checkValidColumn(column)) {
+    throw ("Invalid column name");
+  }
+  if (!checkValidCell(cell)) {
+    throw ("Invalid cell name");
+  }
   var documentProperties = PropertiesService.getDocumentProperties();
   // id = getLatestPropertyID(userProperties) + 1
   id = getRandomInt(10000);
@@ -22,7 +28,10 @@ function setProperty(id, value) {
   var documentProperties = PropertiesService.getDocumentProperties();
   documentProperties.setProperty(id, value);
 }
-
+function setPropertyIfNeeded(currentProperties, id, value) {
+  if (!(id in currentProperties)) {setProperty(id, value); return}
+  if ((id in currentProperties)&&(currentProperties[id] != value)) {setProperty(id, value); return}
+}
 function getFolderProperty() {
   var documentProperties = PropertiesService.getDocumentProperties();
   prop = JSON.parse(documentProperties.getProperty("pdfFolder"));
@@ -46,7 +55,7 @@ function deleteAllProperties() {
   try {
     // Get user properties in the current user.
     var ui = SpreadsheetApp.getUi();
-    var response = ui.alert('Are you sure you want to delete all settings?', ui.ButtonSet.YES_NO);
+    var response = ui.alert('Are you sure you want to delete all settings?\n Please, restart Genera afterwards.', ui.ButtonSet.YES_NO);
     // Process the user's response.
     if (response == ui.Button.YES) {
       const documentProperties = PropertiesService.getDocumentProperties();

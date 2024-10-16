@@ -125,3 +125,26 @@ function urlFetchWihtoutError(url, requestData) {
   }
   throw "Too many retries:" + error;
 }
+
+function checkValidColumn(column) {
+  const columnRegex = new RegExp("[a-zA-Z]+");
+  if (!columnRegex.test(column)) {
+    return false;
+  }
+  return true;
+}
+function checkValidRow(row) {
+  if (isNaN(parseInt(row))) {
+    return false;
+  }
+  return true;
+}
+
+function checkValidCell(cell){
+  const cellRegex = new RegExp("[a-zA-Z]+[0-9]+");
+  if (!cellRegex.test(cell)) {
+    return false;
+  }
+  return true;
+}
+
