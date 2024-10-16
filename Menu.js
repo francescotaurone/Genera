@@ -17,11 +17,15 @@
 function onOpen(e) {
   console.info('onOpen', 'e.authMode', e && e.authMode)
   SpreadsheetApp.getUi()
-      .createAddonMenu()
-      .addItem('Settings', 'showSidebar')
-      .addItem('Install trigger on form submission', 'installTrigger')
-      .addItem('Delete triggers', 'deleteTriggers')
-      .addToUi();
+    .createAddonMenu()
+    .addItem('Settings', 'showSidebar')
+    .addSeparator()
+    .addItem('Install trigger on form submission', 'installTrigger')
+    .addItem('Delete triggers', 'deleteTriggers')
+    .addSeparator()
+    .addItem('Print all settings', 'printAllProperties')
+    .addItem('Delete all settings', 'deleteAllProperties')
+    .addToUi();
 }
 
 /**
@@ -41,21 +45,21 @@ function onInstall(e) {
  */
 function showSidebar() {
   var ui = HtmlService.createTemplateFromFile('SideBar')
-      .evaluate()
-      .setTitle(APP_TITLE)
-      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+    .evaluate()
+    .setTitle(APP_TITLE)
+    .setSandboxMode(HtmlService.SandboxMode.IFRAME);
   SpreadsheetApp.getUi().showSidebar(ui);
 }
 
 function installTrigger() {
   ScriptApp.newTrigger('onFormSubmitFunction')
-      .forSpreadsheet(SpreadsheetApp.getActive())
-      .onFormSubmit()
-      .create();
+    .forSpreadsheet(SpreadsheetApp.getActive())
+    .onFormSubmit()
+    .create();
   SpreadsheetApp.getUi().alert("Trigger installed");
 }
 
-function deleteTriggers(){
+function deleteTriggers() {
   // Deletes all triggers in the current project.
   var triggers = ScriptApp.getProjectTriggers();
   for (var i = 0; i < triggers.length; i++) {

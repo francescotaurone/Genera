@@ -2,173 +2,149 @@
 <html>
 
 <head>
-    <base target="_top">
-    <!-- Use a templated HTML printing scriptlet to import common stylesheet -->
-    <?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+  <base target="_top">
+  <!-- Use a templated HTML printing scriptlet to import common stylesheet -->
+  <?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
 </head>
 
 <body>
-    <!-- Below is the HTML code that defines the sidebar element structure. -->
-    <div class="sidebar branding-below">
-        <p>
-            Generate a pdf from a sheet template and datasheet.
-        </p>
-        <div class="block form-group" id="sidebar-datasheet-block">
-            <label for="sidebar-datasheet">Row to Process</label>
-            <input id="row" type="number" style="column: 5.5em;" , value=1>
-        </div>
-        <button id="sidebar-generate-pdf-button" class="action">GENERATE PDF</button>
-        <div id="sidebar-generation-status"></div>
-        <hr>
-        <br>
-        <div role="form" id="cell-bindings-form" aria-label="cell-bindings-form"></div>
-        <!--
+  <? var documentProperties=PropertiesService.getDocumentProperties(); var prop; var placeholder?>
+  <!-- Below is the HTML code that defines the sidebar element structure. -->
+  <div class="sidebar branding-below">
+    <p>
+      Generate a pdf from a sheet template and datasheet.
+    </p>
+    <div class="block form-group" id="sidebar-datasheet-block">
+      <label for="sidebar-datasheet">Row to Process</label>
+      <input id="row" type="number" value=1>
+    </div>
+    <button id="sidebar-generate-pdf-button" class="action">GENERATE PDF</button>
+    <div id="sidebar-generation-status"></div>
+    <hr>
+    <br>
+    <div role="form" id="cell-bindings-form" aria-label="cell-bindings-form"></div>
+    <!--
         <div>
           <button class="action" id="choose-folder-button">Choose Folder</button>
         </div>
         <table>  <tr> <td><i class='material-symbols-outlined' id='refresh-folder'>refresh</i></td><td id='folder-name-info'></td> </table>
         -->
 
-        <div class="block form-group" id="sidebar-datasheet-block">
-            <label for="sidebar-datasheet">Data Sheet</label>
-            <select id="data-sheet-dropdown" class="dropbtn" style="column: 5.5em;">PDFsheet
-                <option value=<? var userProperties=PropertiesService.getUserProperties(); var
-                    prop=userProperties.getProperty("datasheet"); if (!isNaN(prop)){ var pdfsheet_placeholder="Sheet1" ;
-                    }else{ var pdfsheet_placeholder=prop; } ?>
-                    <?=pdfsheet_placeholder?>
-                    >
-                    <?=pdfsheet_placeholder?>
-                </option>
-            </select>
+    <div class="block form-group" id="sidebar-datasheet-block">
+      <label for="sidebar-datasheet">Data Sheet</label>
+      <select id="data-sheet-dropdown" class="dropbtn">
+        <? prop=documentProperties.getProperty("datasheet"); if (prop){var placeholder=prop; ?><option value=
+          <?=placeholder?>text=<?=placeholder?>
+          selected> </option><?} ?>
+      </select>
+    </div>
+    <div class="block form-group" id="sidebar-pdfsheet-block">
+      <label for="sidebar-pdfsheet">PDF template sheet</label>
+      <select id="pdf-sheet-dropdown" class="dropbtn">
+        <? prop=documentProperties.getProperty("pdfsheet"); if (prop){var placeholder=prop; ?><option value=
+          <?=placeholder?>text=<?=placeholder?>
+          selected> </option><?} ?>
+      </select>
+    </div>
+    <div class="block form-group" id="sidebar-pdfname-block">
+      <label for="sidebar-pdfname">Column for PDF name</label>
+      <input id="sidebar-pdfname" type="text" value=<? prop=documentProperties.getProperty("pdfname"); if (!prop){
+        placeholder="A" ; }else{ placeholder=prop; } ?>
+      <?=placeholder?>>
+    </div>
+    <div class="block form-group" id="sidebar-pdflastrow-block">
+      <label for="sidebar-pdflastrow">Last row in the PDF sheet</label>
+      <input id="sidebar-pdflastrow" type="text" value=<? prop=documentProperties.getProperty("pdflastrow"); if (!prop){
+        placeholder="30" ; }else{ placeholder=prop; } ?>
+      <?=placeholder?>>
+    </div>
+    <div class="block form-group" id="sidebar-pdflastcol-block">
+      <label for="sidebar-pdflastcol">Last col in the PDF sheet</label>
+      <input id="sidebar-pdflastcol" type="text" value=<? prop=documentProperties.getProperty("pdflastcol"); if (!prop){
+        placeholder="E" ; }else{ placeholder=prop; } ?>
+      <?=placeholder?>>
+    </div>
+    <div class="block form-group" id="sidebar-pdflastcol-block"><!--style="display: none;">-->
+      <label for="send-email">Do you want to send the pdf via email?</label>
+      <input type="checkbox" id="send-email-check" name="send-email" value="send" <?
+        prop=documentProperties.getProperty("emailchecked"); if(prop=="true" ){ placeholder="checked" ; }else{
+        placeholder="" ; } ?>
+      <?=placeholder?>>
+      <div id="email-info">
+        <div class="block form-group">
+          <label for="sidebar-mail-column">Email address column</label>
+          <br>
+          <input id="sidebar-mail-column" type="text" value=<? prop=documentProperties.getProperty("emailcolumn");
+            if(!prop){ placeholder="B" ; }else{ placeholder=prop; } ?>
+          <?=placeholder?>>
         </div>
-        <div class="block form-group" id="sidebar-pdfsheet-block">
-            <label for="sidebar-pdfsheet">PDF template sheet</label>
-            <select id="pdf-sheet-dropdown" class="dropbtn" style="column: 5.5em;">PDFsheet
-                <option value=<? var userProperties=PropertiesService.getUserProperties(); var
-                    prop=userProperties.getProperty("pdfsheet"); if (!isNaN(prop)){ var pdfsheet_placeholder="Sheet1" ;
-                    }else{ var pdfsheet_placeholder=prop; } ?>
-                    <?=pdfsheet_placeholder?>
-                    >
-                    <?=pdfsheet_placeholder?>
-                </option>
-            </select>
+        <div class="block form-group">
+          <label for="email-sender-name">Email sender name</label>
+          <input id="email-sender-name" type="text" value=<? prop=documentProperties.getProperty("sendername");
+            if(!prop){ placeholder="Mario Rossi" ; }else{ placeholder=prop; } ?>
+          <?=placeholder?>>
         </div>
-        <div class="block form-group" id="sidebar-pdfname-block">
-            <label for="sidebar-pdfname">Column for PDF name</label>
-            <input id="sidebar-pdfname" type="text" style="column: 5.5em;" value=<? var
-                userProperties=PropertiesService.getUserProperties(); var prop=userProperties.getProperty("pdfname"); if
-                (!isNaN(prop)){ var pdfname_placeholder="A" ; }else{ var pdfname_placeholder=prop; } ?>
-            <?=pdfname_placeholder?>>
+        <div class="block form-group">
+          <label for="email-subject">Email subject</label>
+          <input id="email-subject" type="text" value=<? prop=documentProperties.getProperty("subject"); if(!prop){
+            placeholder="Receipt" ; }else{ placeholder=prop; } ?>
+          <?=placeholder?>>
         </div>
-        <div class="block form-group" id="sidebar-pdflastrow-block">
-            <label for="sidebar-pdflastrow">Last row in the PDF sheet</label>
-            <input id="sidebar-pdflastrow" type="text" style="column: 5.5em;" value=<? var
-                userProperties=PropertiesService.getUserProperties(); var prop=userProperties.getProperty("pdflastrow");
-                if (isNaN(prop)){ var pdflastrow_placeholder="30" ; }else{ var pdflastrow_placeholder=prop; } ?>
-            <?=pdflastrow_placeholder?>>
+        <div class="block form-group">
+          <label for="email-body">Email body</label>
+          <textarea id="email-body" rows="3"><? 
+                       
+                      prop=documentProperties.getProperty("body"); 
+                      if(!prop){ placeholder="Here is the receipt. Regards." ; }else{ placeholder=prop; } 
+                  ?><?=placeholder?></textarea>
         </div>
-        <div class="block form-group" id="sidebar-pdflastcol-block">
-            <label for="sidebar-pdflastcol">Last col in the PDF sheet</label>
-            <input id="sidebar-pdflastcol" type="text" style="column: 5.5em;" value=<? var
-                userProperties=PropertiesService.getUserProperties(); var prop=userProperties.getProperty("pdflastcol");
-                if (isNaN(prop)){ var pdflastcol_placeholder="15" ; }else{ var pdflastcol_placeholder=prop; } ?>
-            <?=pdflastcol_placeholder?>>
-        </div>
-        <div class="block form-group" id="sidebar-pdflastcol-block"><!--style="display: none;">-->
-            <label for="send-email">Do you want to send the pdf via email?</label>
-            <input type="checkbox" id="send-email-check" name="send-email" value="send"
-            <?
-                var userProperties=PropertiesService.getUserProperties(); 
-                var prop=userProperties.getProperty("emailchecked"); 
-                if(prop=="true"){ var emailchecked_placeholder="checked" ; }else{ var emailchecked_placeholder=""; }
-            ?><?=emailchecked_placeholder?>>
-            <div id="email-info">
-                <div class="block form-group">
-                  <label for="sidebar-mail-column">Email address column</label>
-                  <br>
-                  <input id="sidebar-mail-column" type="text" style="column: 5.5em;" value=
-                  <? 
-                      var userProperties=PropertiesService.getUserProperties(); 
-                      var prop=userProperties.getProperty("emailcolumn"); 
-                      if(!isNaN(prop)){ var emailcol_placeholder="B" ; }else{ var emailcol_placeholder=prop; } 
-                  ?>
-                  <?=emailcol_placeholder?>>
-                </div>
-                <div class="block form-group">
-                  <label for="email-sender-name">Email sender name</label>
-                  <input id="email-sender-name" type="text" style="column: 5.5em;" value=
-                  <? 
-                      var userProperties=PropertiesService.getUserProperties(); 
-                      var prop=userProperties.getProperty("sendername"); 
-                      if(!isNaN(prop)){ var emailsendername_placeholder="Mario Rossi" ; }else{ var emailsendername_placeholder=prop; } 
-                  ?>
-                  <?=emailsendername_placeholder?>>
-                </div>
-                <div class="block form-group">
-                  <label for="email-subject">Email subject</label>
-                  <input id="email-subject" type="text" style="column: 5.5em;" value=
-                  <? 
-                      var userProperties=PropertiesService.getUserProperties(); 
-                      var prop=userProperties.getProperty("subject"); 
-                      if(!isNaN(prop)){ var emailsubject_placeholder="Receipt" ; }else{ var emailsubject_placeholder=prop; } 
-                  ?>
-                  <?=emailsubject_placeholder?>>
-                </div>
-                <div class="block form-group">
-                  <label for="email-body">Email body</label>
-                  <textarea id="email-body" rows="3"><? 
-                      var userProperties=PropertiesService.getUserProperties(); 
-                      var prop=userProperties.getProperty("body"); 
-                      if(!isNaN(prop)){ var emailbody_placeholder="Here is the receipt. Regards." ; }else{ var emailbody_placeholder=prop; } 
-                  ?><?=emailbody_placeholder?></textarea>
-                </div>
-            </div>
-        </div>
-
-        <div class="block" id="sidebar-add-sheet-button">
-            <button id="sidebar-add-sheet-button" class="action">Submit</button>
-        </div>
-        <div id="sidebar-add-sheet-status"></div>
-        <hr>
-
-        <div class="block form-group" id="sidebar-column-block">
-            <label for="sidebar-column">Column</label>
-            <input id="sidebar-column" type="text" style="column: 5.5em;" value="A">
-        </div>
-        <div class="block form-group" id="sidebar-pdfcell-block">
-            <label for="sidebar-pdfcell">PDF cell name</label>
-            <input id="sidebar-pdfcell" type="text" style="column: 5.5em;" value="A5">
-        </div>
-        <div class="block" id="sidebar-add-binding-button">
-            <button id="sidebar-add-binding-button" class="action">Submit</button>
-        </div>
-        <div id="sidebar-add-status"></div>
-
-        <p>
-            Active Bindings:
-        <div class="block" id="sidebar-refresh-bindings-button">
-            <button id="sidebar-refresh-bindings-button" class="action">Refresh bindings</button>
-        </div>
-        <div id="sidebar-refresh-status"></div>
-        </p>
-
-        <div id="active-bindings"></div>
-        
+      </div>
     </div>
 
+    <div class="block" id="sidebar-update-settings-button" style="display: none;">
+      <button id="sidebar-update-settings-button" class="action">Update Settings</button>
     </div>
+    <div id="sidebar-update-settings-status"></div>
+    <hr>
 
-
-    <!-- Enter sidebar bottom-branding below. -->
-    <div class="sidebar bottom">
-        <img alt="Add-on logo" class="logo" width="15" src="https://avatars.githubusercontent.com/u/48188603?v=4">
-        <span class="gray branding-text">
-            Genera dev: <a href="https://francescotaurone.github.io/" target="_blank">WebPage</a>
-        </span>
+    <div class="block form-group" id="sidebar-column-block">
+      <label for="sidebar-column">Column</label>
+      <input id="sidebar-column" type="text" value="A">
     </div>
+    <div class="block form-group" id="sidebar-pdfcell-block">
+      <label for="sidebar-pdfcell">PDF cell name</label>
+      <input id="sidebar-pdfcell" type="text" value="A5">
+    </div>
+    <div class="block" id="sidebar-add-binding-button">
+      <button id="sidebar-add-binding-button" class="action">Submit</button>
+    </div>
+    <div id="sidebar-add-status"></div>
 
-    <!-- Use a templated HTML printing scriptlet to import JavaScript. -->
-    <?!= HtmlService.createHtmlOutputFromFile('SideBarJavaScript').getContent(); ?>
+    <p>
+      Active Bindings:
+    <div class="block" id="sidebar-refresh-bindings-button">
+      <button id="sidebar-refresh-bindings-button" class="action">Refresh bindings</button>
+    </div>
+    <div id="sidebar-refresh-status"></div>
+    </p>
+
+    <div id="active-bindings"></div>
+
+  </div>
+
+  </div>
+
+
+  <!-- Enter sidebar bottom-branding below. -->
+  <div class="sidebar bottom">
+    <img alt="Add-on logo" class="logo" width="15" src="https://avatars.githubusercontent.com/u/48188603?v=4">
+    <span class="gray branding-text">
+      Genera dev: <a href="https://francescotaurone.github.io/" target="_blank">WebPage</a>
+    </span>
+  </div>
+
+  <!-- Use a templated HTML printing scriptlet to import JavaScript. -->
+  <?!= HtmlService.createHtmlOutputFromFile('SideBarJavaScript').getContent(); ?>
 
 
 

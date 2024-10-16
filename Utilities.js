@@ -1,8 +1,8 @@
 function searchFilesByName(pdfName) {
   //Please enter your search term in the place of Letter
-  var searchFor ="title = '" + pdfName + "'"
-  var names =[];
-  var fileIds=[];
+  var searchFor = "title = '" + pdfName + "'"
+  var names = [];
+  var fileIds = [];
   var files = ReDriveApp.searchFiles(searchFor);
   while (files.hasNext()) {
     var file = files.next();
@@ -15,14 +15,14 @@ function searchFilesByName(pdfName) {
   return fileIds
 }
 
-function removeFilesByName(pdfName){
-  filesToBeRemoved = searchFilesByName(pdfName);  
+function removeFilesByName(pdfName) {
+  filesToBeRemoved = searchFilesByName(pdfName);
   filesToBeRemoved.forEach(function (fileId) {
     var file = ReDriveApp.getFileById(fileId);
     file.setTrashed(true);
   })
 }
-function removeFilesById(pdfId){ 
+function removeFilesById(pdfId) {
   pdfId.forEach(function (id) {
     var file = ReDriveApp.getFileById(id);
     file.setTrashed(true);
@@ -76,11 +76,9 @@ function test_getFolderByName() {
   // folder.setTrashed(true);
 }
 
-function columnToLetter(column)
-{
+function columnToLetter(column) {
   var temp, letter = '';
-  while (column > 0)
-  {
+  while (column > 0) {
     temp = (column - 1) % 26;
     letter = String.fromCharCode(temp + 65) + letter;
     column = (column - temp - 1) / 26;
@@ -88,11 +86,9 @@ function columnToLetter(column)
   return letter;
 }
 
-function letterToColumn(letter)
-{
+function letterToColumn(letter = "E") {
   var column = 0, length = letter.length;
-  for (var i = 0; i < length; i++)
-  {
+  for (var i = 0; i < length; i++) {
     column += (letter.charCodeAt(i) - 64) * Math.pow(26, length - i - 1);
   }
   return column;
@@ -100,4 +96,32 @@ function letterToColumn(letter)
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
+}
+
+const validateEmail = (email) => {
+  return String(email)
+    .toLowerCase()
+    .match(
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
+};
+
+function urlFetchWihtoutError(url, requestData) {
+  const NB_RETRY = 3;
+  var nbSecPause = 1.5;
+  var nbErr = 0;
+  var error;
+  while (nbErr < NB_RETRY) {
+    try {
+      if (nbErr > 0) SpreadsheetApp.getActiveSpreadsheet().toast("Retrying PDF generation: " + nbErr);
+      var res = UrlFetchApp.fetch(url, requestData);
+      return res;
+    }
+    catch (error) {
+      nbErr++;
+      Utilities.sleep(nbSecPause * 1000)
+      nbSecPause += 0.5;
+    }
+  }
+  throw "Too many retries:" + error;
 }
