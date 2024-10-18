@@ -69,7 +69,7 @@
       //alert("button pressed")
       google.script.run
         .withSuccessHandler(onRefreshBindingsClick())
-        .withFailureHandler(alert('all-bindings-table-button click() yielded an error: ' + e))
+        .withFailureHandler(function (err) {alert('all-bindings-table-button click() yielded an error: ' + err)})
         .deleteSingleProperty($(this).attr('id'));
     });
 
@@ -208,7 +208,8 @@
           dropdown = document.getElementById(id);
           for (var i = 0; i < sheetNameArray.length; i++) {
             var sheetName = sheetNameArray[i];
-            existingOptions = dropdown.querySelectorAll("[value=" + sheetName + "]");
+            var sheetNameRegex = makeNameFromString(sheetName)
+            existingOptions = dropdown.querySelectorAll("[value='" + sheetName + "']");
             if (existingOptions.length == 0) {
               var el = document.createElement("option");
               el.textContent = sheetName;
@@ -279,4 +280,8 @@
     var object = document.getElementById(objectID);
     setTimeout(function(){object.style.display = "none";}, delay);
   }
+  function makeNameFromString(str){
+    return str.replace(/\W+/g, '_').toLowerCase()
+  }
+  
 </script>

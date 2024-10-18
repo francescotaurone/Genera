@@ -76,7 +76,7 @@ function test_getFolderByName() {
   // folder.setTrashed(true);
 }
 
-function columnToLetter(column) {
+function columnToLetter(column = 696) {
   var temp, letter = '';
   while (column > 0) {
     temp = (column - 1) % 26;

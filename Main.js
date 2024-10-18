@@ -32,6 +32,7 @@ function generateResultingPDF(rowToProcess = 1, settings) {
   var dataSheet = ss.getSheetByName(properties["datasheet"]);
   var data = dataSheet.getDataRange().getValues();
 
+  if (dataSheet.getMaxRows()<rowToProcess) throw("Row number is invalid, there aren't that many rows in the template.")
   // PDF Sheet
   const pdfSheet = ss.getSheetByName(properties["pdfsheet"]);
   //const pdfFolder = JSON.parse(properties["pdfFolder"]);
@@ -82,13 +83,15 @@ function generateResultingPDF(rowToProcess = 1, settings) {
   SpreadsheetApp.flush();
   //Utilities.sleep(500); // Using to offset any potential latency in creating .pdf
 
-  const pdf = createPDF(ss.getId(), pdfSheet, pdfName, properties["pdflastrow"], letterToColumn(properties["pdflastcol"]));
+  //ss.getId()
+  //const pdf = createPDF(ss.getID(), pdfSheet, pdfName, properties["pdflastrow"], letterToColumn(properties["pdflastcol"]));
+  const pdf = createPDFNoRest(ss, properties["pdfsheet"], pdfName, properties["pdflastrow"], letterToColumn(properties["pdflastcol"]));
 
-  /*
+  
   rngClear.forEach(function (cell) {
       cell.clearContent();
   });
-  
+  /*
   if (pdf === false){
     return false
   }
@@ -164,11 +167,41 @@ function generaNomePDFRicevutaFinale(form, nome_e_cognome_figlio) {
   return `ER2024_RICEVUTA_${nome_e_cognome_figlio.replace(/\W+/g, '_').toLowerCase()}`
 }
 
+function createPDFNoRest(ss, pdfSheetName, pdfName, lastRow, lastCol) {
+  pdfSheet = ss.getSheetByName(pdfSheetName)
+  Logger.log("Info on Cropping")
+  Logger.log("Rows: "+(parseInt(lastRow))+" to "+(pdfSheet.getMaxRows()- parseInt(lastRow)));
+  Logger.log("Cols: "+(parseInt(lastCol))+" to "+(pdfSheet.getMaxColumns()- parseInt(lastCol)));
+  if(pdfSheet.getMaxRows()>parseInt(lastRow)) pdfSheet.deleteRows(parseInt(lastRow),pdfSheet.getMaxRows()- parseInt(lastRow))
+  if(pdfSheet.getMaxColumns()>parseInt(lastCol)) pdfSheet.deleteColumns(parseInt(lastCol),pdfSheet.getMaxColumns() - parseInt(lastCol))
+
+  var sheets = ss.getSheets();
+  var activeSheet = ss.getActiveSheet();
+  var activeRange = activeSheet.getActiveRange();
+  var forcedHiddenSheets = []
+  for (var i = 0; i < sheets.length; i++) {
+    if ((sheets[i].getSheetName() !== pdfSheetName)&&(!sheets[i].isSheetHidden())) {
+      sheets[i].hideSheet();
+      forcedHiddenSheets.push(sheets[i]);
+    }
+  }
+  
+  pdf = ss.getBlob().setName(pdfName + '.pdf').getAs('application/pdf');
+  
+  pdf64 = Utilities.base64Encode(pdf.getBytes());
+  url = `data:application/pdf;base64,${pdf64}`;
+  for (var i = 0; i < forcedHiddenSheets.length; i++) {
+    forcedHiddenSheets[i].showSheet()
+  }
+  activeSheet.activate()
+  activeSheet.setActiveRange(activeRange);
+  return { "pdf": pdf, "url": url }
+}
 function createPDF(ssId, sheet, pdfName, lastRow, lastCol) {
   const fr = 0, fc = 0, lc = lastCol, lr = lastRow;
 
   const url = "https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=" + ssId + "&exportFormat=pdf&" +
-    //const url = "https://docs.google.com/spreadsheets/d/" + ssId + "/export" +"?format=pdf&" +
+  //const url = "https://docs.google.com/spreadsheets/d/" + ssId + "/export" +"?format=pdf&" +
     "size=7&" +
     "fzr=true&" +
     "portrait=true&" +
