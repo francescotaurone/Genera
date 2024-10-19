@@ -25,6 +25,9 @@ function onOpen(e) {
     .addSeparator()
     .addItem('Print all settings', 'printAllProperties')
     .addItem('Delete all settings', 'deleteAllProperties')
+    .addItem('Import settings', 'importAllProperties')
+    .addSeparator()
+    .addItem('Insert A4 Margins in template', 'insertA4Margins')
     .addToUi();
 }
 

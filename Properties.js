@@ -27,6 +27,9 @@ function setFolderProperty(id, url, name) {
 function setProperty(id, value) {
   var documentProperties = PropertiesService.getDocumentProperties();
   documentProperties.setProperty(id, value);
+  d = {};
+  d[id]=value;
+  return d
 }
 function setPropertyIfNeeded(currentProperties, id, value) {
   if (!(id in currentProperties)) {setProperty(id, value); return}
@@ -43,9 +46,33 @@ function printAllProperties() {
   var documentProperties = PropertiesService.getDocumentProperties();
   prop = documentProperties.getProperties();
   var ui = SpreadsheetApp.getUi();
-  ui.alert(JSON.stringify(prop));
+  ui.alert(JSON.stringify(prop,null, "\t"));
   return prop
 }
+
+function importAllProperties(){
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.prompt('Importing properties from Json', 'Insert the text with settings as you find it when using "Print all Settings" in Genera menu. Then, to continue, press OK.\n All your current settings will be deleted.', ui.ButtonSet.OK_CANCEL);
+
+  // Process the user's response.
+  if (response.getSelectedButton() == ui.Button.OK) {
+    try{
+      dictToImport = JSON.parse(response.getResponseText());
+      const documentProperties = PropertiesService.getDocumentProperties();
+      documentProperties.deleteAllProperties();
+      for (id in dictToImport){
+        setProperty(id, dictToImport[id]);
+      }
+    }catch(e){
+      ui.alert("Something is wrong with the text you are trying to import \n "+e)
+    }
+    ui.alert("Import ok.")
+
+  }
+
+}
+
+
 function readProperties() {
   var documentProperties = PropertiesService.getDocumentProperties();
   return documentProperties.getProperties();

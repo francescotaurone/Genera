@@ -9,13 +9,21 @@ function onFormSubmitFunction(e) {
   Logger.log(JSON.stringify(e))
   console.log("Trigger in execution");
   Utilities.sleep(4000); //Per essere sicuri che la risposta appena entrata vada nel tab
-  generateResultingPDF(rowToProcess = 2) //the last arriving row should be row 2. It is vilnerable from many forms coming in at the same time.
+  for (row = e.range.getRow(); row <= e.range.getLastRow(); row++){
+    Logger.log("Row: "+row);
+    generateResultingPDF(rowToProcess = row);
+  }
+  
 }
 
-function generateResultingPDF(rowToProcess = 1, settings) {
+function generateResultingPDF(rowToProcess = 2) {
   //{pdfname=A, pdfsheet=pdf, 1={"column":"B","cell":"B3"}, 2={"column":"C","cell":"B4"}, pdflastrow=6, pdfFolder={"id":"1a_jQNoce82PR3vNZaPJYsHlBt3SFQWuI","url":"https://drive.google.com/drive/folders/1a_jQNoce82PR3vNZaPJYsHlBt3SFQWuI","name":"outputFolderTest"}, datasheet=Foglio2, pdflastcol=4}
-  console.log("Settings in generateResultingPDF: " + JSON.stringify(settings));
-  onSubmitSheetClick(settings);
+  /*
+  if (settings !== null){
+    console.log("Settings in generateResultingPDF: " + JSON.stringify(settings));
+    onSubmitSheetClick(settings);
+  }
+  */
   properties = readProperties();
   Logger.log("Reading properties " + JSON.stringify(properties))
 
@@ -42,7 +50,9 @@ function generateResultingPDF(rowToProcess = 1, settings) {
   var pdfs = [];
   var rowData = data[rowToProcess - 1];
   var pdfName = rowData[pdfColumnIndex];
-
+  if (pdfName === ""){
+    throw ("The PDF name is empty. Have you selected the right row/column?");
+  }
 
   /*
   // Verifica se il file è già presente
@@ -115,7 +125,7 @@ function generateResultingPDF(rowToProcess = 1, settings) {
     const mailColumnIndex = letterToColumn(properties["emailcolumn"]) - 1;
     emailAddress = rowData[mailColumnIndex];
     if (!validateEmail(emailAddress)) {
-      throw "Email address invalid. Have you specified the right column?"
+      throw "Email address "+emailAddress+" invalid. Have you specified the right column?"
     }
     Logger.log("Sending email to " + emailAddress);
     sendEmail(emailAddress, subject, body, senderName, attachment);
@@ -172,8 +182,8 @@ function createPDFNoRest(ss, pdfSheetName, pdfName, lastRow, lastCol) {
   Logger.log("Info on Cropping")
   Logger.log("Rows: "+(parseInt(lastRow))+" to "+(pdfSheet.getMaxRows()- parseInt(lastRow)));
   Logger.log("Cols: "+(parseInt(lastCol))+" to "+(pdfSheet.getMaxColumns()- parseInt(lastCol)));
-  if(pdfSheet.getMaxRows()>parseInt(lastRow)) pdfSheet.deleteRows(parseInt(lastRow),pdfSheet.getMaxRows()- parseInt(lastRow))
-  if(pdfSheet.getMaxColumns()>parseInt(lastCol)) pdfSheet.deleteColumns(parseInt(lastCol),pdfSheet.getMaxColumns() - parseInt(lastCol))
+  if(pdfSheet.getMaxRows()>parseInt(lastRow)) pdfSheet.deleteRows(parseInt(lastRow)+1,pdfSheet.getMaxRows()- parseInt(lastRow))
+  if(pdfSheet.getMaxColumns()>parseInt(lastCol)) pdfSheet.deleteColumns(parseInt(lastCol)+1,pdfSheet.getMaxColumns() - parseInt(lastCol))
 
   var sheets = ss.getSheets();
   var activeSheet = ss.getActiveSheet();
@@ -405,7 +415,6 @@ function onSubmitSheetClick(settings) {
     if (ok){
       break;
     }
-  Utilities.sleep(1000);
   }
   if (!ok) {
     throw "Settings not correctly saved. Please try again."
@@ -418,3 +427,4 @@ function onSubmitSheetClick(settings) {
 function isSubset(subsetObj, supersetObj) {
   return Object.keys(subsetObj).every(key => key in supersetObj);
 }
+

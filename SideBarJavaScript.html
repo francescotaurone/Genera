@@ -48,20 +48,40 @@
     $('#sidebar-add-binding-button').click(onSubmitClick);
 
     $('#sidebar-update-settings-button').click(async function () {
-      $('#sidebar-update-settings-button').prop('disabled', true);
-      google.script.run
-        .withSuccessHandler(function () {
-          showAddSheetStatus('Successfully updated', 'success');
-          $('#sidebar-update-settings-button').prop('disabled', false);
+      updatePropertiesBasedOnValuesInHTML();
+    });
+    const elementPropertyDict = {
+      "data-sheet-dropdown": "datasheet",
+      "pdf-sheet-dropdown": "pdfsheet",
+      "sidebar-pdfname": "pdfname",
+      "sidebar-pdflastrow": "pdflastrow",
+      "sidebar-pdflastcol": "pdflastcol",
+      "send-email-check": "emailchecked",
+      "sidebar-mail-column":"emailcolumn",
+      "email-sender-name": "emailsendername",
+      "email-subject": "emailsubject",
+      "email-body":"emailbody",
+    }
+    allIdsToUpdate = ""
+    for (const id in elementPropertyDict) {
+      allIdsToUpdate = allIdsToUpdate + "#"+id+", "
+    }
+    allIdsToUpdate = allIdsToUpdate.substring(0, allIdsToUpdate.length - 2);
+    $(allIdsToUpdate).on("change", function() {
+      /*
+      runner = google.script.run
+        .withSuccessHandler(function (d) {
+          console.log("New property: "+JSON.stringify(d));
         })
         .withFailureHandler(function (error) {
-          showAddSheetStatus(error, 'error');
-          $('#sidebar-update-settings-button').prop('disabled', false);
-        })
-        .onSubmitSheetClick(getSettingsFromHTML());
-    }
-
-    );
+          console.log("Error changing property: "+error);
+        });
+      console.log("Nodename "+this.type)
+      if (this.type == "checkbox")runner.setProperty(elementPropertyDict[this.id], this.checked); 
+      else runner.setProperty(elementPropertyDict[this.id], this.value); 
+      */
+      updatePropertiesBasedOnValuesInHTML();
+    });
 
     $('#sidebar-refresh-bindings-button').click(onRefreshBindingsClick);
 
@@ -222,6 +242,7 @@
               dropdown.appendChild(el);
             }
           }
+          updatePropertiesBasedOnValuesInHTML();
         })
       .withFailureHandler(
         function (error) {
@@ -283,5 +304,17 @@
   function makeNameFromString(str){
     return str.replace(/\W+/g, '_').toLowerCase()
   }
-  
+  function updatePropertiesBasedOnValuesInHTML(){
+    $('#sidebar-update-settings-button').prop('disabled', true);
+    google.script.run
+        .withSuccessHandler(function () {
+          showAddSheetStatus('Successfully updated', 'success');
+          $('#sidebar-update-settings-button').prop('disabled', false);
+        })
+        .withFailureHandler(function (error) {
+          showAddSheetStatus(error, 'error');
+          $('#sidebar-update-settings-button').prop('disabled', false);
+        })
+        .onSubmitSheetClick(getSettingsFromHTML());
+  }
 </script>

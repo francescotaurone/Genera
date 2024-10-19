@@ -84,13 +84,13 @@
         </div>
         <div class="block form-group">
           <label for="email-sender-name">Email sender name</label>
-          <input id="email-sender-name" type="text" value=<? prop=documentProperties.getProperty("sendername");
+          <input id="email-sender-name" type="text" value=<? prop=documentProperties.getProperty("emailsendername");
             if(!prop){ placeholder="Mario Rossi" ; }else{ placeholder=prop; } ?>
           <?=placeholder?>>
         </div>
         <div class="block form-group">
           <label for="email-subject">Email subject</label>
-          <input id="email-subject" type="text" value=<? prop=documentProperties.getProperty("subject"); if(!prop){
+          <input id="email-subject" type="text" value=<? prop=documentProperties.getProperty("emailsubject"); if(!prop){
             placeholder="Receipt" ; }else{ placeholder=prop; } ?>
           <?=placeholder?>>
         </div>
@@ -98,7 +98,7 @@
           <label for="email-body">Email body</label>
           <textarea id="email-body" rows="3"><? 
                        
-                      prop=documentProperties.getProperty("body"); 
+                      prop=documentProperties.getProperty("emailbody"); 
                       if(!prop){ placeholder="Here is the receipt. Regards." ; }else{ placeholder=prop; } 
                   ?><?=placeholder?></textarea>
         </div>
@@ -141,7 +141,7 @@
   <div class="sidebar bottom">
     <img alt="Add-on logo" class="logo" width="15" src="https://avatars.githubusercontent.com/u/48188603?v=4">
     <span class="gray branding-text">
-      Genera dev: <a href="https://francescotaurone.github.io/" target="_blank">WebPage</a>
+      Genera <a href="https://filedn.eu/luqgIJk6dbsJb2c8H5WpnEL/PDFFromData/" target="_blank">Help</a>
     </span>
   </div>
 
